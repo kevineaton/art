@@ -1,0 +1,5 @@
+# This directory should contain the outputs of the *.png or *.jpg files transformed
+# Ignore everything in this directory
+*
+# Except this file
+!.gitignore
