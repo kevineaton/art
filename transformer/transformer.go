@@ -15,9 +15,10 @@ import (
 
 	"github.com/fogleman/gg"
 	"github.com/kevineaton/art/imageutils"
+	"github.com/kevineaton/art/progressbar"
 )
 
-const totalCycleCount = 10
+const totalCycleCount = 1000
 
 type TransformerUserParams struct {
 	DestWidth                int
@@ -140,7 +141,15 @@ func Run() {
 
 		sketch := NewTransformerSketch(img, params)
 
+		bar := progressbar.GetProgressBar(&progressbar.BarOptions{
+			Max:          totalCycleCount,
+			Width:        100,
+			EnableColors: true,
+			Description:  fmt.Sprintf("[%d of %d] Transforming %s to %s", i, len(files)-1, fileName, outputName),
+		})
+
 		for i := 0; i < totalCycleCount; i++ {
+			bar.Add(1)
 			sketch.Update()
 		}
 
