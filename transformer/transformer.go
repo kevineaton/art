@@ -14,12 +14,11 @@ import (
 	_ "image/jpeg"
 
 	"github.com/fogleman/gg"
+	"github.com/jinzhu/copier"
 	"github.com/kevineaton/art/imageutils"
 	"github.com/kevineaton/art/progressbar"
 	"github.com/spf13/cobra"
 )
-
-const totalCycleCount = 1000
 
 type TransformerUserParams struct {
 	DestWidth                int
@@ -57,8 +56,8 @@ func GetCommand() *cobra.Command {
 			fmt.Printf("Done!\n")
 		},
 	}
-	cmd.Flags().IntVar(&params.DestHeight, "dest-height", 1000, "Height of the destination target")
-	cmd.Flags().IntVar(&params.DestWidth, "dest-width", 1000, "Width of the destination target")
+	cmd.Flags().IntVar(&params.DestHeight, "dest-height", 1000, "Height of the destination target; if set to 0, will attempt to use the source height")
+	cmd.Flags().IntVar(&params.DestWidth, "dest-width", 1000, "Width of the destination target; if set to 0, will attempt to use the source width")
 	cmd.Flags().Float64Var(&params.StrokeJitterRatio, "stroke-jitter-ratio", .001, "How much jitter or deviation we add for targets")
 	cmd.Flags().Float64Var(&params.StrokeRatio, "stroke-ratio", .75, "Size of the stroke compared to the final result")
 	cmd.Flags().Float64Var(&params.StrokeReduction, "stroke-reduction", .002, "Reduce the stroke by this amount on each iteration")
@@ -73,7 +72,7 @@ func GetCommand() *cobra.Command {
 }
 
 // Run is the entry point and where config options will be passed when implemented
-func Run(params *TransformerUserParams) {
+func Run(originalParams *TransformerUserParams) {
 	rand.Seed(time.Now().Unix())
 
 	files, err := ioutil.ReadDir("./input")
@@ -81,9 +80,7 @@ func Run(params *TransformerUserParams) {
 		log.Panicln(err)
 	}
 
-	// set some calculated values
-	params.StrokeJitter = int(params.StrokeJitterRatio * float64(params.DestWidth))
-	format, err := imageutils.GetImageFormatFromString(params.OutputFileType)
+	format, err := imageutils.GetImageFormatFromString(originalParams.OutputFileType)
 	if err != nil {
 		format = imageutils.ImageFormatPNG
 	}
@@ -92,6 +89,12 @@ func Run(params *TransformerUserParams) {
 
 	for i := range files {
 		fileName := files[i].Name()
+
+		// we want to copy from the original, since we use the struct as state
+		// in subsequent calls
+		params := &TransformerUserParams{}
+		copier.Copy(params, originalParams)
+
 		// split on the name to identify the file type
 		parts := strings.Split(fileName, ".")
 		if len(parts) < 2 {
@@ -101,7 +104,7 @@ func Run(params *TransformerUserParams) {
 		if extension != "jpg" && extension != "jpeg" && extension != "png" {
 			continue
 		}
-		outputName := fmt.Sprintf("%s_%s_transformed.%s", strings.TrimSuffix(fileName, filepath.Ext(fileName)), now, params.OutputFileType)
+		outputName := fmt.Sprintf("%s_%s_%dcycles_transformed.%s", strings.TrimSuffix(fileName, filepath.Ext(fileName)), now, params.TotalCycles, params.OutputFileType)
 
 		// now handle the file
 		img, err := imageutils.LoadImage("./input/" + fileName)
@@ -110,15 +113,16 @@ func Run(params *TransformerUserParams) {
 		}
 
 		sketch := newTransformerSketch(img, params)
+		params.StrokeJitter = int(params.StrokeJitterRatio * float64(params.DestWidth))
 
 		bar := progressbar.GetProgressBar(&progressbar.BarOptions{
-			Max:          totalCycleCount,
-			Width:        100,
+			Max:          params.TotalCycles,
+			Width:        50,
 			EnableColors: true,
 			Description:  fmt.Sprintf("[%d of %d] Transforming %s to %s", i, len(files)-1, fileName, outputName),
 		})
 
-		for i := 0; i < totalCycleCount; i++ {
+		for i := 0; i < params.TotalCycles; i++ {
 			bar.Add(1)
 			sketch.update()
 		}
@@ -127,6 +131,9 @@ func Run(params *TransformerUserParams) {
 		if err != nil {
 			fmt.Printf("%+v\n", err)
 		}
+		sketch.dc.Clear()
+		bar.Close()
+		fmt.Printf("\n")
 	}
 
 }
@@ -136,6 +143,13 @@ func newTransformerSketch(source image.Image, userParams *TransformerUserParams)
 	s := &TransformerSketch{TransformerUserParams: userParams}
 	bounds := source.Bounds()
 	s.sourceWidth, s.sourceHeight = bounds.Max.X, bounds.Max.Y
+	if s.DestHeight == 0 {
+		s.DestHeight = s.sourceHeight
+	}
+	if s.DestWidth == 0 {
+		s.DestWidth = s.sourceWidth
+	}
+
 	s.initialStrokeSize = s.StrokeRatio * float64(s.DestWidth)
 	s.strokeSize = s.initialStrokeSize
 
