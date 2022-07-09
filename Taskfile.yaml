@@ -1,0 +1,26 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:  
+  default:
+    cmds:
+      - task help
+
+  build:
+    desc: Tidy the dependencies and build the binary
+    cmds:
+      - go mod tidy
+      - go build .
+
+  help:
+    desc: Build and display the help output
+    deps: [ build ]
+    cmds:
+      - ./art --help
+  
+  clean-output:
+    desc: Clean out the output
+    cmds:
+      - rm -f ./output/*.jpg
+      - rm -f ./output/*.png
