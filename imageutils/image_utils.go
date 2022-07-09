@@ -1,19 +1,36 @@
 package imageutils
 
 import (
+	"errors"
 	"fmt"
 	"image"
 	"image/jpeg"
 	"image/png"
 	"os"
+	"strings"
 )
 
 type ImageFormat string
 
 const (
-	ImageFormatJPG ImageFormat = "jpg"
-	ImageFormatPNG ImageFormat = "png"
+	ImageFormatJPG     ImageFormat = "jpg"
+	ImageFormatPNG     ImageFormat = "png"
+	ImageFormatInvalid ImageFormat = ""
 )
+
+// GetImageFormatFromString is a helper to get the ImageFormat from a string
+func GetImageFormatFromString(input string) (ImageFormat, error) {
+	switch strings.ToLower(input) {
+	case "jpg":
+		return ImageFormatJPG, nil
+	case "jpeg":
+		return ImageFormatJPG, nil
+	case "png":
+		return ImageFormatPNG, nil
+	default:
+		return ImageFormatInvalid, errors.New("invalid format")
+	}
+}
 
 // LoadImage loads an image from the filesystem and attempts to decode it
 func LoadImage(path string) (image.Image, error) {
