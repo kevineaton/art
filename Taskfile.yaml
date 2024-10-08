@@ -7,6 +7,11 @@ tasks:
     cmds:
       - task help
 
+  vendor:
+    cmds:
+      - go mod tidy
+      - go mod vendor
+
   build:
     desc: Tidy the dependencies and build the binary
     cmds:
