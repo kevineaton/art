@@ -5,7 +5,7 @@ go 1.25
 require (
 	github.com/fogleman/gg v1.3.0
 	github.com/jinzhu/copier v0.4.0
-	github.com/schollz/progressbar/v3 v3.18.0
+	github.com/schollz/progressbar/v3 v3.19.0
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
