@@ -17,6 +17,15 @@ tasks:
     cmds:
       - go mod tidy
       - go build .
+  
+  go-dep-update:
+    cmds: 
+      - go get -u ./...
+      - task vendor
+  
+  go-dep-update-list:
+    cmds:
+      - go list -u -mod=mod -m all 2>/dev/null | grep '\['
 
   help:
     desc: Build and display the help output
