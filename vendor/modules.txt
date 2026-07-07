@@ -35,8 +35,8 @@ github.com/rivo/uniseg
 # github.com/sagikazarmark/locafero v0.11.0
 ## explicit; go 1.23.0
 github.com/sagikazarmark/locafero
-# github.com/schollz/progressbar/v3 v3.19.0
-## explicit; go 1.22
+# github.com/schollz/progressbar/v3 v3.19.1
+## explicit; go 1.25.0
 github.com/schollz/progressbar/v3
 # github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8
 ## explicit; go 1.20
@@ -79,13 +79,13 @@ golang.org/x/image/font
 golang.org/x/image/font/basicfont
 golang.org/x/image/math/f64
 golang.org/x/image/math/fixed
-# golang.org/x/sys v0.29.0
-## explicit; go 1.18
+# golang.org/x/sys v0.46.0
+## explicit; go 1.25.0
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.28.0
-## explicit; go 1.18
+# golang.org/x/term v0.44.0
+## explicit; go 1.25.0
 golang.org/x/term
 # golang.org/x/text v0.29.0
 ## explicit; go 1.24.0
